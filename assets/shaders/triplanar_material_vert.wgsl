@@ -6,6 +6,7 @@ struct Vertex {
     @location(0) position: vec3<f32>,
     @location(1) normal: vec3<f32>,
     @location(2) material_weights: u32,
+    @location(3) material_indices: vec4<i32>,
 };
 
 struct VertexOutput {
@@ -13,7 +14,8 @@ struct VertexOutput {
     @location(0) world_position: vec4<f32>,
     @location(1) world_normal: vec3<f32>,
     @location(2) material_weights: vec4<f32>,
-    @location(3) @interpolate(flat) instance_index: u32,
+    @location(3) material_indices: vec4<i32>,
+    @location(4) @interpolate(flat) instance_index: u32,
 };
 
 // The builtin one didn't work in webgl.
@@ -40,6 +42,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     );
     out.clip_position = view_transformations::position_world_to_clip(out.world_position.xyz);
     out.material_weights = unpack_unorm4x8_(vertex.material_weights);
+    out.material_indices = vertex.material_indices;
     out.instance_index = vertex.instance_index;
 
     return out;

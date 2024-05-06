@@ -7,9 +7,10 @@
 //! This crate provides the
 //! [`TriplanarMaterial`](triplanar_material::TriplanarMaterial), which is based
 //! on `bevy_pbr`'s [`StandardMaterial`](bevy::pbr::StandardMaterial), but it
-//! supports blending up to 4 materials using array textures and a new
+//! supports blending multiple materials using array textures and two new
 //! [`ATTRIBUTE_MATERIAL_WEIGHTS`](triplanar_material::ATTRIBUTE_MATERIAL_WEIGHTS)
-//! vertex attribute.
+//! [`ATTRIBUTE_MATERIAL_INDICES`](triplanar_material::ATTRIBUTE_MATERIAL_INDICES)
+//! vertex attributes.
 //!
 //! # Implementation
 //!

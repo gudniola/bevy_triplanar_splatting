@@ -75,6 +75,7 @@ fn triplanar_normal_to_world_splatted(
     samp: sampler,
     flags: u32,
     w_mtl: vec4<f32>,
+    i_mtl: vec4<i32>,
     world_normal: vec3<f32>,
     tm: TriplanarMapping,
 ) -> vec3<f32> {
@@ -82,22 +83,22 @@ fn triplanar_normal_to_world_splatted(
     var sum = vec3(0.0);
     if (w_mtl.r > 0.0) {
         sum += w_mtl.r * triplanar_normal_to_world(
-            two_component_normal_map, flip_normal_map_y, tex, samp, flags, 0, world_normal, tm
+            two_component_normal_map, flip_normal_map_y, tex, samp, flags, i_mtl.r, world_normal, tm
         );
     }
     if (w_mtl.g > 0.0) {
         sum += w_mtl.g * triplanar_normal_to_world(
-            two_component_normal_map, flip_normal_map_y, tex, samp, flags, 1, world_normal, tm
+            two_component_normal_map, flip_normal_map_y, tex, samp, flags, i_mtl.g, world_normal, tm
         );
     }
     if (w_mtl.b > 0.0) {
         sum += w_mtl.b * triplanar_normal_to_world(
-            two_component_normal_map, flip_normal_map_y, tex, samp, flags, 2, world_normal, tm
+            two_component_normal_map, flip_normal_map_y, tex, samp, flags, i_mtl.b, world_normal, tm
         );
     }
     if (w_mtl.a > 0.0) {
         sum += w_mtl.a * triplanar_normal_to_world(
-            two_component_normal_map, flip_normal_map_y, tex, samp, flags, 3, world_normal, tm
+            two_component_normal_map, flip_normal_map_y, tex, samp, flags, i_mtl.a, world_normal, tm
         );
     }
     return normalize(sum);

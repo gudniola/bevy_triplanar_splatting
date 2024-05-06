@@ -21,7 +21,8 @@ struct VertexOutput {
     @location(0) world_position: vec4<f32>,
     @location(1) world_normal: vec3<f32>,
     @location(2) material_weights: vec4<f32>,
-    @location(3) @interpolate(flat) instance_index: u32,
+    @location(3) material_indices: vec4<i32>,
+    @location(4) @interpolate(flat) instance_index: u32,
 };
 
 struct TriplanarMaterial {
@@ -35,27 +36,27 @@ struct TriplanarMaterial {
     uv_scale: f32,
 };
 
-@group(1) @binding(0)
+@group(2) @binding(0)
 var<uniform> material: TriplanarMaterial;
-@group(1) @binding(1)
+@group(2) @binding(1)
 var base_color_texture: texture_2d_array<f32>;
-@group(1) @binding(2)
+@group(2) @binding(2)
 var base_color_sampler: sampler;
-@group(1) @binding(3)
+@group(2) @binding(3)
 var emissive_texture: texture_2d_array<f32>;
-@group(1) @binding(4)
+@group(2) @binding(4)
 var emissive_sampler: sampler;
-@group(1) @binding(5)
+@group(2) @binding(5)
 var metallic_roughness_texture: texture_2d_array<f32>;
-@group(1) @binding(6)
+@group(2) @binding(6)
 var metallic_roughness_sampler: sampler;
-@group(1) @binding(7)
+@group(2) @binding(7)
 var occlusion_texture: texture_2d_array<f32>;
-@group(1) @binding(8)
+@group(2) @binding(8)
 var occlusion_sampler: sampler;
-@group(1) @binding(9)
+@group(2) @binding(9)
 var normal_map_texture: texture_2d_array<f32>;
-@group(1) @binding(10)
+@group(2) @binding(10)
 var normal_map_sampler: sampler;
 
 fn alpha_discard_copy_paste(material: TriplanarMaterial, output_color: vec4<f32>) -> vec4<f32>{
@@ -102,6 +103,7 @@ fn fragment(
             base_color_texture,
             base_color_sampler,
             in.material_weights,
+            in.material_indices,
             bimap
         );
     }
@@ -124,6 +126,7 @@ fn fragment(
                 emissive_texture,
                 emissive_sampler,
                 in.material_weights,
+                in.material_indices,
                 bimap
             ).rgb;
             emissive = vec4<f32>(emissive.rgb * biplanar_emissive, 1.0);
@@ -137,6 +140,7 @@ fn fragment(
                 metallic_roughness_texture,
                 metallic_roughness_sampler,
                 in.material_weights,
+                in.material_indices,
                 bimap
             );
             // Sampling from GLTF standard channels for now
@@ -153,6 +157,7 @@ fn fragment(
                 occlusion_texture,
                 occlusion_sampler,
                 in.material_weights,
+                in.material_indices,
                 bimap
             ).r);
         }
@@ -161,7 +166,7 @@ fn fragment(
         let ssao_multibounce = gtao_multibounce(ssao, pbr_input.material.base_color.rgb);
         occlusion = min(occlusion, ssao_multibounce);
 #endif
-        pbr_input.occlusion = occlusion;
+        pbr_input.diffuse_occlusion = occlusion;
 
         pbr_input.frag_coord = in.clip_position;
         pbr_input.world_position = in.world_position;
@@ -182,11 +187,12 @@ fn fragment(
             normal_map_sampler,
             material.flags,
             in.material_weights,
+            in.material_indices,
             in.world_normal,
             trimap,
         );
         pbr_input.V = V;
-        pbr_input.occlusion = occlusion;
+        pbr_input.diffuse_occlusion = occlusion;
 
         pbr_input.flags = mesh[in.instance_index].flags;
 

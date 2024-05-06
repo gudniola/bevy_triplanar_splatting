@@ -1,14 +1,11 @@
 use bevy::{
     pbr::{MaterialPipeline, MaterialPipelineKey, StandardMaterialFlags},
     prelude::*,
-    reflect::TypeUuid,
+    reflect::{std_traits::ReflectDefault, Reflect},
     render::{
         mesh::{MeshVertexAttribute, MeshVertexBufferLayout},
         render_asset::RenderAssets,
-        render_resource::{
-            AsBindGroup, AsBindGroupShaderType, Face, RenderPipelineDescriptor, ShaderRef,
-            ShaderType, SpecializedMeshPipelineError, TextureFormat, VertexFormat,
-        },
+        render_resource::*,
     },
 };
 
@@ -21,8 +18,7 @@ use bevy::{
 /// attribute and give all textures dimension `"2d_array"`. Up to 4 layers are
 /// supported by the shader. Material weights are encoded as 4 `u8` numbers that
 /// get packed into a `u32`.
-#[derive(AsBindGroup, Asset, Reflect, Debug, Clone, TypeUuid)]
-#[uuid = "2f3d7f74-4bf7-4f32-98cd-858edafa5ca2"]
+#[derive(AsBindGroup, Asset, Reflect, Debug, Clone)]
 #[bind_group_data(TriplanarMaterialKey)]
 #[uniform(0, TriplanarMaterialUniform)]
 #[reflect(Default, Debug)]
@@ -116,15 +112,15 @@ impl Material for TriplanarMaterial {
             Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
             Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
             ATTRIBUTE_MATERIAL_WEIGHTS.at_shader_location(2),
+            ATTRIBUTE_MATERIAL_INDICES.at_shader_location(3),
         ])?;
         descriptor.vertex.buffers = vec![vertex_layout];
         if key.bind_group_data.normal_map {
-            descriptor
-                .fragment
-                .as_mut()
-                .unwrap()
-                .shader_defs
-                .push("STANDARDMATERIAL_NORMAL_MAP".into());
+            if let Some(fragment) = descriptor.fragment.as_mut() {
+                fragment
+                    .shader_defs
+                    .push("STANDARDMATERIAL_NORMAL_MAP".into());
+            }
         }
         descriptor.primitive.cull_mode = key.bind_group_data.cull_mode;
         Ok(())
@@ -142,6 +138,9 @@ impl Material for TriplanarMaterial {
 
 pub const ATTRIBUTE_MATERIAL_WEIGHTS: MeshVertexAttribute =
     MeshVertexAttribute::new("MaterialWeights", 582540667, VertexFormat::Uint32);
+
+pub const ATTRIBUTE_MATERIAL_INDICES: MeshVertexAttribute =
+    MeshVertexAttribute::new("MaterialIndices", 582540668, VertexFormat::Sint32x4);
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct TriplanarMaterialKey {
@@ -226,7 +225,7 @@ impl AsBindGroupShaderType<TriplanarMaterialUniform> for TriplanarMaterial {
 
         TriplanarMaterialUniform {
             base_color: self.base_color.as_linear_rgba_f32().into(),
-            emissive: self.emissive.into(),
+            emissive: self.emissive.as_linear_rgba_f32().into(),
             roughness: self.perceptual_roughness,
             metallic: self.metallic,
             reflectance: self.reflectance,

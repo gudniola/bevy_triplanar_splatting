@@ -2,12 +2,16 @@ use bevy::{
     // pbr::wireframe::{WireframeConfig, WireframePlugin},
     prelude::*,
     render::{
+        camera::Exposure,
         renderer::RenderDevice,
         texture::{ImageAddressMode, ImageFilterMode, ImageSampler, ImageSamplerDescriptor},
+        view::RenderLayers,
     },
 };
 use bevy_triplanar_splatting::{
-    triplanar_material::{TriplanarMaterial, ATTRIBUTE_MATERIAL_WEIGHTS},
+    triplanar_material::{
+        TriplanarMaterial, ATTRIBUTE_MATERIAL_INDICES, ATTRIBUTE_MATERIAL_WEIGHTS,
+    },
     TriplanarMaterialPlugin,
 };
 use smooth_bevy_cameras::{controllers::fps::*, LookTransformPlugin};
@@ -54,18 +58,18 @@ fn setup(
     //     spawned: false,
     // });
 
-    // commands.insert_resource(AmbientLight {
-    //     brightness: 2.0,
-    //     ..default()
-    // });
+    commands.insert_resource(AmbientLight {
+        brightness: 40.0,
+        ..default()
+    });
 
     // Spawn lights and camera.
     commands.spawn((
         MovingLight,
         PointLightBundle {
             point_light: PointLight {
-                intensity: 50000.,
-                range: 100.,
+                intensity: 1_000_000.0,
+                range: 25.,
                 ..default()
             },
             ..default()
@@ -73,7 +77,14 @@ fn setup(
     ));
 
     commands
-        .spawn(Camera3dBundle::default())
+        .spawn(Camera3dBundle {
+            camera: Camera {
+                hdr: true,
+                ..default()
+            },
+            exposure: Exposure::INDOOR,
+            ..default()
+        })
         .insert(FpsCameraBundle::new(
             FpsCameraController {
                 translate_sensitivity: 8.0,
@@ -183,11 +194,7 @@ fn spawn_meshes(
     }
     handles.spawned = true;
 
-    let mut sphere_mesh = Mesh::try_from(shape::Icosphere {
-        radius: 5.0,
-        subdivisions: 6,
-    })
-    .unwrap();
+    let mut sphere_mesh = Mesh::try_from(Sphere { radius: 5.0 }).unwrap();
 
     let material_weights: Vec<u32> = sphere_mesh
         .attribute(Mesh::ATTRIBUTE_NORMAL)
@@ -204,7 +211,11 @@ fn spawn_meshes(
             // encode_weights([255, 0, 0, 0])
         })
         .collect();
+    let number_of_materials = material_weights.len();
     sphere_mesh.insert_attribute(ATTRIBUTE_MATERIAL_WEIGHTS, material_weights);
+
+    let material_indices: Vec<[i32; 4]> = vec![[0, 1, 2, 3]; number_of_materials];
+    sphere_mesh.insert_attribute(ATTRIBUTE_MATERIAL_INDICES, material_indices);
 
     commands.spawn(MaterialMeshBundle {
         mesh: meshes.add(sphere_mesh),
