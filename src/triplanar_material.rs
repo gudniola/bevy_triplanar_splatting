@@ -116,6 +116,7 @@ impl Material for TriplanarMaterial {
             Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
             Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
             ATTRIBUTE_MATERIAL_WEIGHTS.at_shader_location(2),
+            ATTRIBUTE_MATERIAL_INDICES.at_shader_location(3),
         ])?;
         descriptor.vertex.buffers = vec![vertex_layout];
         if key.bind_group_data.normal_map {
@@ -142,6 +143,9 @@ impl Material for TriplanarMaterial {
 
 pub const ATTRIBUTE_MATERIAL_WEIGHTS: MeshVertexAttribute =
     MeshVertexAttribute::new("MaterialWeights", 582540667, VertexFormat::Uint32);
+    
+pub const ATTRIBUTE_MATERIAL_INDICES: MeshVertexAttribute =
+    MeshVertexAttribute::new("MaterialIndices", 582540668, VertexFormat::Sint32x4);
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct TriplanarMaterialKey {

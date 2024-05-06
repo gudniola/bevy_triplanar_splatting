@@ -113,21 +113,22 @@ fn biplanar_texture_splatted(
     tex: texture_2d_array<f32>,
     samp: sampler,
     w_mtl: vec4<f32>,
+    i_mtl: vec4<i32>,
     bimap: BiplanarMapping
 ) -> vec4<f32> {
     // Conditional sampling improves performance quite a bit.
     var sum = vec4(0.0);
     if (w_mtl.r > 0.0) {
-        sum += w_mtl.r * biplanar_texture(tex, samp, 0, bimap);
+        sum += w_mtl.r * biplanar_texture(tex, samp, i_mtl.r, bimap);
     }
     if (w_mtl.g > 0.0) {
-        sum += w_mtl.g * biplanar_texture(tex, samp, 1, bimap);
+        sum += w_mtl.g * biplanar_texture(tex, samp, i_mtl.g, bimap);
     }
     if (w_mtl.b > 0.0) {
-        sum += w_mtl.b * biplanar_texture(tex, samp, 2, bimap);
+        sum += w_mtl.b * biplanar_texture(tex, samp, i_mtl.b, bimap);
     }
     if (w_mtl.a > 0.0) {
-        sum += w_mtl.a * biplanar_texture(tex, samp, 3, bimap);
+        sum += w_mtl.a * biplanar_texture(tex, samp, i_mtl.a, bimap);
     }
     return sum;
 }

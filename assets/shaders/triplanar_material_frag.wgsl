@@ -21,7 +21,8 @@ struct VertexOutput {
     @location(0) world_position: vec4<f32>,
     @location(1) world_normal: vec3<f32>,
     @location(2) material_weights: vec4<f32>,
-    @location(3) @interpolate(flat) instance_index: u32,
+    @location(3) material_indices: vec4<i32>,
+    @location(4) @interpolate(flat) instance_index: u32,
 };
 
 struct TriplanarMaterial {
@@ -102,6 +103,7 @@ fn fragment(
             base_color_texture,
             base_color_sampler,
             in.material_weights,
+            in.material_indices,
             bimap
         );
     }
@@ -124,6 +126,7 @@ fn fragment(
                 emissive_texture,
                 emissive_sampler,
                 in.material_weights,
+                in.material_indices,
                 bimap
             ).rgb;
             emissive = vec4<f32>(emissive.rgb * biplanar_emissive, 1.0);
@@ -137,6 +140,7 @@ fn fragment(
                 metallic_roughness_texture,
                 metallic_roughness_sampler,
                 in.material_weights,
+                in.material_indices,
                 bimap
             );
             // Sampling from GLTF standard channels for now
@@ -153,6 +157,7 @@ fn fragment(
                 occlusion_texture,
                 occlusion_sampler,
                 in.material_weights,
+                in.material_indices,
                 bimap
             ).r);
         }
@@ -182,6 +187,7 @@ fn fragment(
             normal_map_sampler,
             material.flags,
             in.material_weights,
+            in.material_indices,
             in.world_normal,
             trimap,
         );

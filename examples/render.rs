@@ -7,7 +7,7 @@ use bevy::{
     },
 };
 use bevy_triplanar_splatting::{
-    triplanar_material::{TriplanarMaterial, ATTRIBUTE_MATERIAL_WEIGHTS},
+    triplanar_material::{TriplanarMaterial, ATTRIBUTE_MATERIAL_INDICES, ATTRIBUTE_MATERIAL_WEIGHTS},
     TriplanarMaterialPlugin,
 };
 use smooth_bevy_cameras::{controllers::fps::*, LookTransformPlugin};
@@ -204,7 +204,11 @@ fn spawn_meshes(
             // encode_weights([255, 0, 0, 0])
         })
         .collect();
+    let number_of_materials = material_weights.len();
     sphere_mesh.insert_attribute(ATTRIBUTE_MATERIAL_WEIGHTS, material_weights);
+
+    let material_indices: Vec<[i32;4]> = vec![[0,1,2,3]; number_of_materials] ;
+    sphere_mesh.insert_attribute(ATTRIBUTE_MATERIAL_INDICES, material_indices);
 
     commands.spawn(MaterialMeshBundle {
         mesh: meshes.add(sphere_mesh),
